@@ -5,7 +5,8 @@ defmodule Location.MixProject do
     [
       app: :location,
       version: "0.1.0",
-      elixir: "~> 1.12",
+      elixir: "~> 1.15",
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       description: description(),
       package: package(),
@@ -31,9 +32,16 @@ defmodule Location.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger]
+      extra_applications: [:logger | extra_applications(Mix.env())]
     ]
   end
+
+  defp extra_applications(env) when env in [:dev, :test], do: [:inets, :ssl, :xmerl]
+  defp extra_applications(_env), do: []
+
+  # Specifies which paths to compile per environment.
+  defp elixirc_paths(env) when env in [:dev, :test], do: ["lib", "mix_tasks"]
+  defp elixirc_paths(_env), do: ["lib"]
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
