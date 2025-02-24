@@ -19,3 +19,6 @@ The data for cities comes from the [geonames](http://www.geonames.org/) project.
 ### Postal Codes
 
 The data for postal codes comes from the [geonames](http://www.geonames.org/) project. This project has scripts to download all or individual postal code files via the --source option.
+
+### Mix Tasks
+one must first refresh the applications task lists by running `mix compile` tasks can then be viewed via `mix help`

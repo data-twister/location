@@ -1,8 +1,8 @@
-defmodule Mix.Tasks.UpdatePostalCodeData do
+defmodule Mix.Tasks.Location.UpdatePostalCodeData do
   use Mix.Task
+  @shortdoc "Updates the postal code data from source"
 
-  default = Application.app_dir(:location, "/priv/postal_codes.csv")
-  @destination_filename Application.get_env(:location, :postal_codes_source_file, default)
+  @destination_filename Application.compile_env(:location, :postal_codes_source_file, "priv/postal_codes.csv")
 
   @doc """
   The data source clocks in at 16mb. Expect this to take a while.
@@ -11,9 +11,11 @@ defmodule Mix.Tasks.UpdatePostalCodeData do
 
   def run(args) do
     {options, _, _} =
-      OptionParser.parse(["--source", "allCountries", "--list", "--append", "--help"],
+      OptionParser.parse(args,
         strict: [source: :string, list: :boolean, append: :boolean, help: :boolean]
       )
+
+    options = Keyword.merge([help: false, list: false, append: false], options)
 
     case(Keyword.get(options, :help) || Keyword.get(options, :list)) do
       false ->
@@ -41,7 +43,12 @@ defmodule Mix.Tasks.UpdatePostalCodeData do
   def main(name, append \\ false) do
     src = "https://download.geonames.org/export/zip/#{name}.zip"
     System.cmd("wget", [src, "-O", "/tmp/#{name}.zip"])
-    System.cmd("unzip", ["/tmp/#{name}.zip", "-d", "/tmp"])
+
+    zip_file = Unzip.LocalFile.open("/tmp/#{name}.zip")
+    {:ok, unzip} = Unzip.new(zip_file)
+    Unzip.file_stream!(unzip, "#{name}.txt")
+    |> Stream.into(File.stream!("/tmp/#{name}.txt"))
+    |> Stream.run()
 
     process_file("/tmp/#{name}.txt", append)
   end
@@ -60,11 +67,12 @@ defmodule Mix.Tasks.UpdatePostalCodeData do
 
     IO.puts("Writing result to #{@destination_filename}")
 
+    Location.Scraper.write_date_to_version()
+
     case append do
       false -> File.write!(@destination_filename, Enum.join(result, "\n"))
       true -> File.write!(@destination_filename, Enum.join(result, "\n"), :append)
     end
 
-    Location.Scraper.write_date_to_version()
   end
 end

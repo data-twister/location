@@ -19,7 +19,7 @@ defmodule Location.Scraper do
     result = Floki.find(result, "a") |> Enum.drop(5)
 
     Enum.map(result, fn x ->
-      [{_, [{_, href}], [name]}] = Floki.find(x, "a")
+      [{_, [{_, _href}], [name]}] = Floki.find(x, "a")
       String.replace(name, ".zip", "")
     end)
     |> Enum.join(", ")

@@ -40,7 +40,7 @@ defmodule Location.MixProject do
   defp extra_applications(_env), do: []
 
   # Specifies which paths to compile per environment.
-  defp elixirc_paths(env) when env in [:dev, :test], do: ["lib", "mix_tasks"]
+  defp elixirc_paths(:test), do: ["lib"]
   defp elixirc_paths(_env), do: ["lib"]
 
   # Run "mix help deps" to learn about dependencies.
@@ -48,10 +48,10 @@ defmodule Location.MixProject do
     [
       {:jason, "~> 1.3"},
       {:nimble_csv, "~> 1.2"},
-      {:floki, "~> 0.35.2", only: [:dev, :test]},
+      {:floki, "~> 0.35.2"},
       {:tesla, "~> 1.8"},
       {:hackney, "~> 1.20"},
-      {:flow, "~> 1.2", only: [:dev, :test]},
+      {:flow, "~> 1.2"},
       {:unzip, "0.11.0"}
     ]
   end

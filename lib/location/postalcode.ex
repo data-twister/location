@@ -68,7 +68,7 @@ defmodule Location.PostalCode do
   @doc """
   Finds postal_code information by postal code.
   """
-  @spec get_postal_code(string()) :: %__MODULE__{} | nil
+  @spec get_postal_code(String.t()) :: %__MODULE__{} | nil
   def get_postal_code(code) do
     case :ets.lookup(@ets_table_by_id, code) do
       [{postal_code, {country_code, state_code, city_name, latitude, longitude}}] ->
@@ -85,7 +85,7 @@ defmodule Location.PostalCode do
   This function returns all postal code founds when the country has multiple
   cities with the same name.
   """
-  @spec get_postal_codes(string(), string(), string()) :: %__MODULE__{} | nil
+  @spec get_postal_codes(String.t(), String.t(), String.t()) :: %__MODULE__{} | nil
   def get_postal_codes(country_code, state_code, city_name) do
     case :ets.lookup(@ets_table_by_lookup, {country_code, state_code, city_name}) do
       data when is_list(data) ->
