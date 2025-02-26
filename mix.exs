@@ -52,7 +52,8 @@ defmodule Location.MixProject do
       {:tesla, "~> 1.8"},
       {:hackney, "~> 1.20"},
       {:flow, "~> 1.2"},
-      {:unzip, "0.11.0"}
+      {:unzip, "0.11.0"},
+      {:csv, "~> 3.2"}
     ]
   end
 end

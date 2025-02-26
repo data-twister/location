@@ -2,7 +2,11 @@ defmodule Mix.Tasks.Location.UpdatePostalCodeData do
   use Mix.Task
   @shortdoc "Updates the postal code data from source"
 
-  @destination_filename Application.compile_env(:location, :postal_codes_source_file, "priv/postal_codes.csv")
+  @destination_filename Application.compile_env(
+                          :location,
+                          :postal_codes_source_file,
+                          "priv/postal_codes.csv"
+                        )
 
   @doc """
   The data source clocks in at 16mb. Expect this to take a while.
@@ -46,6 +50,7 @@ defmodule Mix.Tasks.Location.UpdatePostalCodeData do
 
     zip_file = Unzip.LocalFile.open("/tmp/#{name}.zip")
     {:ok, unzip} = Unzip.new(zip_file)
+
     Unzip.file_stream!(unzip, "#{name}.txt")
     |> Stream.into(File.stream!("/tmp/#{name}.txt"))
     |> Stream.run()
@@ -61,7 +66,7 @@ defmodule Mix.Tasks.Location.UpdatePostalCodeData do
       filename
       |> File.stream!(read_ahead: 100_000)
       |> Flow.from_enumerable()
-      |> Flow.map(&String.split(&1, tab))
+      |> Flow.map(&(String.trim(&1) |> String.split(tab)))
       |> Flow.partition()
       |> Enum.into([])
 
@@ -69,10 +74,7 @@ defmodule Mix.Tasks.Location.UpdatePostalCodeData do
 
     Location.Scraper.write_date_to_version()
 
-    case append do
-      false -> File.write!(@destination_filename, Enum.join(result, "\n"))
-      true -> File.write!(@destination_filename, Enum.join(result, "\n"), :append)
-    end
-
+    file = File.open!(@destination_filename, [:write, :utf8])
+    result |> CSV.encode() |> Enum.each(&IO.write(file, &1))
   end
 end

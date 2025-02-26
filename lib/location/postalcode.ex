@@ -23,46 +23,151 @@ defmodule Location.PostalCode do
         {:decentralized_counters, false}
       ])
 
+    @ets_table_by_id =
+      :ets.new(@ets_table_by_id, [
+        :set,
+        :named_table,
+        :public,
+        :compressed,
+        {:write_concurrency, true},
+        {:read_concurrency, true},
+        {:decentralized_counters, false}
+      ])
+
     source_file()
     |> File.stream!()
     |> Stream.chunk_every(15_000)
     |> Task.async_stream(
       fn chunk ->
         chunk
-        |> LocationCSV.parse_stream()
-        |> Stream.each(fn [
-                            country_code,
-                            postal_code,
-                            city_name,
-                            _state_name,
-                            state_code,
-                            _municipality,
-                            _municipality_code,
-                            _admin_name3,
-                            _admin_code3,
-                            latitude,
-                            longitude,
-                            _accuracy
-                          ] ->
-          country_code = String.trim(country_code)
-
-          true =
-            :ets.insert(
-              @ets_table_by_lookup,
-              {{country_code, state_code, city_name}, {postal_code, latitude, longitude}}
-            )
-
-          true =
-            :ets.insert(
-              @ets_table_by_id,
-              {postal_code, {country_code, state_code, city_name, latitude, longitude}}
-            )
+        |> PostCodeCSV.parse_stream()
+        |> Stream.each(fn data ->
+          __MODULE__.parse(data)
         end)
         |> Stream.run()
       end,
       timeout: :infinity
     )
     |> Stream.run()
+  end
+
+  def parse(data) do
+    case data do
+      [
+        country_code,
+        postal_code,
+        city_name,
+        _state_name,
+        state_code,
+        _municipality,
+        _municipality_code,
+        _admin_name3,
+        _admin_code3,
+        latitude,
+        longitude,
+        _accuracy,
+        _,
+        _
+      ] ->
+        country_code = String.trim(country_code)
+
+        true =
+          :ets.insert(
+            @ets_table_by_lookup,
+            {{country_code, state_code, city_name}, {postal_code, latitude, longitude}}
+          )
+
+        true =
+          :ets.insert(
+            @ets_table_by_id,
+            {postal_code, {country_code, state_code, city_name, latitude, longitude}}
+          )
+
+      [
+        country_code,
+        postal_code,
+        city_name,
+        _state_name,
+        state_code,
+        _municipality,
+        _municipality_code,
+        _admin_name3,
+        _admin_code3,
+        latitude,
+        longitude,
+        _accuracy,
+        _
+      ] ->
+        country_code = String.trim(country_code)
+
+        true =
+          :ets.insert(
+            @ets_table_by_lookup,
+            {{country_code, state_code, city_name}, {postal_code, latitude, longitude}}
+          )
+
+        true =
+          :ets.insert(
+            @ets_table_by_id,
+            {postal_code, {country_code, state_code, city_name, latitude, longitude}}
+          )
+
+      [
+        country_code,
+        postal_code,
+        city_name,
+        _state_name,
+        state_code,
+        _municipality,
+        _municipality_code,
+        _admin_name3,
+        _admin_code3,
+        latitude,
+        longitude,
+        _accuracy
+      ] ->
+        country_code = String.trim(country_code)
+
+        true =
+          :ets.insert(
+            @ets_table_by_lookup,
+            {{country_code, state_code, city_name}, {postal_code, latitude, longitude}}
+          )
+
+        true =
+          :ets.insert(
+            @ets_table_by_id,
+            {postal_code, {country_code, state_code, city_name, latitude, longitude}}
+          )
+
+      [
+        country_code,
+        postal_code,
+        city_name,
+        _state_name,
+        state_code,
+        _municipality,
+        _municipality_code,
+        _admin_name3,
+        _admin_code3,
+        latitude,
+        longitude
+      ] ->
+        true =
+          :ets.insert(
+            @ets_table_by_lookup,
+            {{country_code, state_code, city_name}, {postal_code, latitude, longitude}}
+          )
+
+        true =
+          :ets.insert(
+            @ets_table_by_id,
+            {postal_code, {country_code, state_code, city_name, latitude, longitude}}
+          )
+
+      _data ->
+        :ok
+    end
   end
 
   @doc """
@@ -97,6 +202,15 @@ defmodule Location.PostalCode do
       _ ->
         nil
     end
+  end
+
+  @spec get_postal_codes() :: %__MODULE__{} | nil
+  def get_postal_codes() do
+    :ets.tab2list(@ets_table_by_lookup)
+    |> Enum.map(fn x ->
+      {{country_code, state_code, city_name}, {postal_code, latitude, longitude}} = x
+      to_struct(postal_code, country_code, state_code, city_name, latitude, longitude)
+    end)
   end
 
   defp source_file() do

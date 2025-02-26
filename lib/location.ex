@@ -1,3 +1,4 @@
+NimbleCSV.define(PostCodeCSV, separator: ",", escape: "\~")
 NimbleCSV.define(LocationCSV, separator: "\t", escape: "\~")
 
 defmodule Location do
@@ -10,6 +11,7 @@ defmodule Location do
   defdelegate get_city(city_name, country_code), to: Location.City
   defdelegate get_postal_code(code), to: Location.PostalCode
   defdelegate get_postal_codes(country_code, state_code, city_name), to: Location.PostalCode
+  defdelegate get_postal_codes(), to: Location.PostalCode
 
   def load_all() do
     Logger.debug("Loading location databases...")

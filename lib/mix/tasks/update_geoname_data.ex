@@ -11,6 +11,7 @@ defmodule Mix.Tasks.Location.UpdateGeonameData do
     System.cmd("wget", [@allcountries_src, "-O", "/tmp/allCountries.zip"])
     zip_file = Unzip.LocalFile.open("/tmp/allCountries.zip")
     {:ok, unzip} = Unzip.new(zip_file)
+
     Unzip.file_stream!(unzip, "allCountries.txt")
     |> Stream.into(File.stream!("/tmp/allCountries.txt"))
     |> Stream.run()

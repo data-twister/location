@@ -77,5 +77,6 @@
     <orderEntry type="library" name="unzip" level="project" />
     <orderEntry type="library" name="benchee_html" level="project" />
     <orderEntry type="library" name="mox" level="project" />
+    <orderEntry type="library" name="csv" level="project" />
   </component>
 </module>
