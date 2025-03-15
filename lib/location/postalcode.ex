@@ -11,6 +11,11 @@ defmodule Location.PostalCode do
     :longitude
   ]
 
+  def unload()do
+    :ets.delete(@ets_table_by_id)
+    :ets.delete(@ets_table_by_lookup)
+  end
+
   def load() do
     @ets_table_by_lookup =
       :ets.new(@ets_table_by_lookup, [

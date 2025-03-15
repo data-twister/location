@@ -13,6 +13,13 @@ defmodule Location do
   defdelegate get_postal_codes(country_code, state_code, city_name), to: Location.PostalCode
   defdelegate get_postal_codes(), to: Location.PostalCode
 
+  def unload_all()do
+    :ok = unload(Location.Country)
+    :ok = unload(Location.Subdivision)
+    :ok = unload(Location.City)
+    :ok = unload(Location.PostalCode)
+  end
+
   def load_all() do
     Logger.debug("Loading location databases...")
 
@@ -31,6 +38,13 @@ defmodule Location do
     time = t / 1_000_000
 
     Logger.debug("Loading location database #{inspect(module)} took: #{time}s")
+    :ok
+  end
+
+  def unload(module) do
+    module.unload()
+
+    Logger.debug("Unloading location database #{inspect(module)}")
     :ok
   end
 
